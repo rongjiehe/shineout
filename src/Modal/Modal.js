@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { defaultProps, getProps } from '../utils/proptypes'
 import shallowEqual from '../utils/shallowEqual'
 import { getUidStr } from '../utils/uid'
+import { consumer } from '../AbsoluteContainer'
 import { open, close, destroy } from './events'
 
 class Modal extends Component {
@@ -67,4 +68,4 @@ Modal.defaultProps = {
 
 Modal.displayName = 'ShineoutModal'
 
-export default Modal
+export default consumer(Modal)
