@@ -1,20 +1,71 @@
 import React, { PureComponent } from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import Icons from '../icons'
 import Card from '../Card'
 import { defaultProps, getProps } from '../utils/proptypes'
+import { getComputedSize } from '../utils/style'
 import { modalClass } from '../styles'
 import { Provider } from '../Scroll/context'
 import { Provider as ZProvider } from './context'
 
+function getOffset(node) {
+  const { left, top } = node.getBoundingClientRect()
+  const { width, height } = getComputedSize(node)
+  return {
+    top: top - height / 2,
+    left: left - width / 2,
+  }
+}
+function setTransformOrigin(node, value) {
+  const { style } = node
+  ;['Webkit', 'Moz', 'Ms', 'ms'].forEach(prefix => {
+    style[`${prefix}TransformOrigin`] = value
+  })
+  style.transformOrigin = value
+}
+
+let mousePosition = null
+const getClickPosition = e => {
+  mousePosition = {
+    x: e.clientX,
+    y: e.clientY,
+  }
+  setTimeout(() => {
+    mousePosition = null
+  }, 100)
+}
+
+if (typeof window !== 'undefined' && window.document && window.document.documentElement) {
+  document.documentElement.addEventListener('click', getClickPosition)
+}
+
 export default class Panel extends PureComponent {
+  panel = null
+
   componentDidMount() {
+    this.componentDidUpdate({})
     const { autoFocusButton, id } = this.props
     if (!autoFocusButton) return
     const el = document.querySelector(`#${id}-${autoFocusButton}`)
     if (!el) return
     el.focus()
+  }
+
+  componentDidUpdate() {
+    const node = ReactDOM.findDOMNode(this.panel)
+    setTransformOrigin(node, '')
+    if (node) {
+      if (mousePosition) {
+        const offset = getOffset(node)
+        const left = mousePosition.x - offset.left
+        const top = mousePosition.y - offset.top
+        setTransformOrigin(node, `${left}px ${top}px`)
+      } else {
+        setTransformOrigin(node, '')
+      }
+    }
   }
 
   getStyle() {
@@ -35,6 +86,10 @@ export default class Panel extends PureComponent {
           },
       style || {}
     )
+  }
+
+  savePanel = node => {
+    this.panel = node
   }
 
   // eslint-disable-next-line
@@ -74,6 +129,7 @@ export default class Panel extends PureComponent {
           <div key="mask" className={modalClass('mask')} onClick={maskCloseAble ? onClose : undefined} />
 
           <Card
+            ref={this.savePanel}
             moveable={moveable}
             resizable={resizable}
             key="card"

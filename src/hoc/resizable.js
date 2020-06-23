@@ -5,6 +5,7 @@ import immer from 'immer'
 import { resizableClass } from '../styles'
 import { getUidStr } from '../utils/uid'
 import { curry } from '../utils/func'
+import { getComputedSize } from '../utils/style'
 
 export default curry(
   Origin =>
@@ -85,7 +86,7 @@ export default curry(
         this.appended = true
         this.el = document.querySelector(`.${resizableClass(this.resizableId)}`)
         if (!this.el) return
-        this.size = this.el.getBoundingClientRect()
+        this.size = getComputedSize(this.el)
         this.handlers = new Map()
         ;['e', 's', 'se'].forEach(dir => {
           const handler = document.createElement('div')
